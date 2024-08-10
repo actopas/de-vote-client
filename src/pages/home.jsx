@@ -3,10 +3,10 @@
  * @Author: sunmingyuan <fishmooger@gmail.com>
  * @Date: 2024-08-09 02:01:54
  * @LastEditors: sunmingyuan
- * @LastEditTime: 2024-08-10 19:36:01
+ * @LastEditTime: 2024-08-10 23:15:41
  */
 import React, { useState, useEffect } from "react";
-import { Button, Card, Row, Col, List, Avatar } from "antd";
+import { Button, Card, Row, Col, List, Avatar, Dropdown } from "antd";
 import Web3 from "web3";
 const contractAddress = "0x90B87487248DD14a98A83407D982c57A50BFde1F";
 const Home = () => {
@@ -136,6 +136,15 @@ const Home = () => {
       console.log("Contract not initialized");
     }
   };
+  const shortenAddress = (address, length = 4) => {
+    if (!address) return "";
+    const start = address.substring(0, length + 2); // 加2是因为包括 "0x"
+    const end = address.substring(address.length - length);
+    return `${start}...${end}`;
+  };
+  const disconnectAccount = () => {
+    setAccount("");
+  };
   useEffect(() => {
     const fetchAbi = async () => {
       const response = await fetch("/Vote.json");
@@ -163,10 +172,19 @@ const Home = () => {
         <div>Decentralized Voting Platform</div>
         {!account ? (
           <Button className="" onClick={linkMetaMask}>
-            Vote with MetaMask
+            Connect Wallet
           </Button>
         ) : (
-          <div>{account}</div>
+          <div>
+            <span>Connect as </span>
+            <Dropdown
+              overlay={<Button onClick={disconnectAccount}>Disconnect</Button>}
+              placement="bottom"
+              arrow
+            >
+              <Button>{shortenAddress(account)}</Button>
+            </Dropdown>
+          </div>
         )}
       </div>
       <div className="flex h-5/6">
