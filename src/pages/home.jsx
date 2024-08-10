@@ -3,12 +3,25 @@
  * @Author: sunmingyuan <fishmooger@gmail.com>
  * @Date: 2024-08-09 02:01:54
  * @LastEditors: sunmingyuan
- * @LastEditTime: 2024-08-10 23:15:41
+ * @LastEditTime: 2024-08-11 02:34:03
  */
 import React, { useState, useEffect } from "react";
-import { Button, Card, Row, Col, List, Avatar, Dropdown } from "antd";
+import {
+  Button,
+  Card,
+  Row,
+  Col,
+  List,
+  Avatar,
+  Dropdown,
+  notification,
+} from "antd";
+import {
+  ExclamationCircleOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
 import Web3 from "web3";
-const contractAddress = "0x90B87487248DD14a98A83407D982c57A50BFde1F";
+const contractAddress = "0x2d01381b5cFEa8CF8416D491E01Fa2195625fE8b";
 const Home = () => {
   const voteList = [
     { name: "Alice", id: "1", desc: "Lorem ipsum dolor sit amet." },
@@ -81,6 +94,8 @@ const Home = () => {
   const [abi, setAbi] = useState([]);
   const [rankList, setRankList] = useState([]);
   const [contract, setContract] = useState(null);
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
   const web3 = new Web3(window.ethereum);
 
   const linkMetaMask = async () => {
@@ -105,15 +120,33 @@ const Home = () => {
     console.log("User's account:", accounts[0]);
   };
   const getVote = async (id) => {
+    if (account === "") {
+      return notification.warning({
+        message: "Warning",
+        description: "Please connect the wallet first.",
+        icon: <ExclamationCircleOutlined style={{ color: "#faad14" }} />, // 警告图标，通常为黄色
+        placement: "topRight", // 可选位置，默认为右上角
+      });
+    }
     try {
       const accounts = await web3.eth.getAccounts();
-      const receipt = await contract.methods
-        .vote(id)
-        .send({ from: accounts[0] });
-      console.log(receipt);
+      await contract.methods.vote(id).send({ from: accounts[0] });
+      notification.success({
+        message: "Vote Successful",
+        description: "Your vote has been successfully submitted.",
+        icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />, // 成功的图标
+        placement: "topRight", // 可选位置，默认为右上角
+      });
       getVoteList();
     } catch (error) {
-      console.error("Error:", error);
+      notification.open({
+        message: "ERROR",
+        description: "Voting failed, please check your account or network.",
+        icon: <ExclamationCircleOutlined style={{ color: "#ff4d4f" }} />,
+        onClick: () => {
+          console.log("Notification Clicked!");
+        },
+      });
     }
   };
   const getVoteList = async () => {
