@@ -3,7 +3,7 @@
  * @Author: sunmingyuan <fishmooger@gmail.com>
  * @Date: 2024-08-09 02:01:54
  * @LastEditors: sunmingyuan
- * @LastEditTime: 2024-08-11 02:34:03
+ * @LastEditTime: 2024-08-11 02:52:25
  */
 import React, { useState, useEffect } from "react";
 import {
@@ -94,8 +94,6 @@ const Home = () => {
   const [abi, setAbi] = useState([]);
   const [rankList, setRankList] = useState([]);
   const [contract, setContract] = useState(null);
-  const [successVisible, setSuccessVisible] = useState(false);
-  const [errorVisible, setErrorVisible] = useState(false);
   const web3 = new Web3(window.ethereum);
 
   const linkMetaMask = async () => {
@@ -104,7 +102,13 @@ const Home = () => {
       window.web3 = new Web3(window.ethereum);
       try {
         // 请求用户连接 MetaMask
-        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+        const account = accounts[0];
+        // 保存地址并更新UI
+        setAccount(account);
+        localStorage.setItem("userAddress", account);
       } catch (error) {
         console.error("User denied account access");
       }
@@ -115,9 +119,6 @@ const Home = () => {
         "Non-Ethereum browser detected. You should consider trying MetaMask!"
       );
     }
-    const accounts = await window.web3.eth.getAccounts();
-    setAccount(accounts[0]);
-    console.log("User's account:", accounts[0]);
   };
   const getVote = async (id) => {
     if (account === "") {
@@ -177,6 +178,7 @@ const Home = () => {
   };
   const disconnectAccount = () => {
     setAccount("");
+    localStorage.removeItem("userAccount");
   };
   useEffect(() => {
     const fetchAbi = async () => {
@@ -199,6 +201,30 @@ const Home = () => {
       getVoteList();
     }
   }, [contract]);
+  useEffect(() => {
+    if (window.ethereum) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+          localStorage.setItem("userAccount", accounts[0]);
+        } else {
+          setAccount(null);
+          localStorage.removeItem("userAccount");
+        }
+      };
+
+      // 监听账户变更
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+      // 清除监听器
+      return () => {
+        window.ethereum.removeListener(
+          "accountsChanged",
+          handleAccountsChanged
+        );
+      };
+    }
+  }, []);
   return (
     <div className="h-screen flex flex-col font-mono">
       <div className="w-screen h-14 flex justify-between items-center pl-4 pr-4">
