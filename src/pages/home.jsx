@@ -2,8 +2,8 @@
  * @Describle:
  * @Author: sunmingyuan <fishmooger@gmail.com>
  * @Date: 2024-08-09 02:01:54
- * @LastEditors: sunmingyuan
- * @LastEditTime: 2024-08-11 02:52:25
+ * @LastEditors: actopas
+ * @LastEditTime: 2024-08-14 01:51:38
  */
 import React, { useState, useEffect } from "react";
 import {
@@ -110,7 +110,7 @@ const Home = () => {
         setAccount(account);
         localStorage.setItem("userAddress", account);
       } catch (error) {
-        console.error("User denied account access");
+        console.error(error, "User denied account access");
       }
     } else if (window.web3) {
       window.web3 = new Web3(window.web3.currentProvider);
